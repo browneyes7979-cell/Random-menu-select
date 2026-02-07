@@ -78,6 +78,86 @@
     </div>
 </div>
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>오늘 뭐 먹지? 프로</title>
+    <style>
+        :root { --primary: #FF5722; --lunch: #FFC107; --dinner: #3F51B5; --bg: #F8F9FA; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
+
+        /* 페이지 레이아웃 */
+        .page { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            padding: 20px; display: none; flex-direction: column; 
+            background: white; z-index: 1; pointer-events: none; 
+        }
+        .visible { display: flex !important; z-index: 10; pointer-events: auto; }
+
+        /* 홈 화면 UI */
+        #home { justify-content: center; align-items: center; text-align: center; }
+        .mode-btn { width: 90%; padding: 40px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* 메인 앱 UI */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        #slot-machine { height: 100px; font-size: 2rem; font-weight: bold; color: var(--primary); display: flex; justify-content: center; align-items: center; border: 4px solid #f0f0f0; border-radius: 20px; margin-bottom: 20px; background: #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-pick { width: 100%; padding: 25px; border-radius: 20px; border: none; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-pick:active { opacity: 0.8; transform: scale(0.98); }
+
+        .admin-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
+        .list-box { flex: 1; border: 1px solid #f9f9f9; overflow-y: auto; background: #fdfdfd; border-radius: 15px; padding: 10px; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; background: white; margin-bottom: 6px; border-radius: 10px; font-size: 1rem; }
+
+        /* 모달 팝업 */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; pointer-events: auto; }
+        .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="home" class="page visible">
+        <h1 style="margin-bottom: 40px; font-size: 2.2rem;">🍱 오늘 뭐 먹지?</h1>
+        <button type="button" class="mode-btn" style="background:var(--lunch);" onclick="goApp('lunch')">☀️ 점심 추천</button>
+        <button type="button" class="mode-btn" style="background:var(--dinner);" onclick="goApp('dinner')">🌙 저녁 추천</button>
+    </div>
+
+    <div id="app" class="page">
+        <div class="header">
+            <button onclick="location.reload()" style="padding:10px 15px; border-radius:12px; border:1px solid #ddd; background:#fff; font-weight:bold;">◀ 홈</button>
+            <h2 id="title" style="margin:0; font-size: 1.3rem;">메뉴 추천</h2>
+            <div style="width:50px;"></div>
+        </div>
+        <div id="slot-machine">준비 완료!</div>
+        <button id="pickBtn" class="btn-pick" onclick="startRolling()">🎲 메뉴 뽑기!</button>
+        <div class="admin-section">
+            <p style="font-weight:bold; margin:0 0 10px 5px; color:#444;">📋 내 메뉴 리스트 (<span id="menuCount">0</span>)</p>
+            <div style="display:flex; gap:8px; margin-bottom:15px;">
+                <input type="text" id="menuInput" style="flex:1; padding:12px; border:2px solid #eee; border-radius:12px; font-size:16px;" placeholder="메뉴 추가">
+                <button onclick="addMenu()" style="padding:0 20px; background:#4CAF50; color:white; border:none; border-radius:12px; font-weight:bold;">추가</button>
+            </div>
+            <div id="menuListView" class="list-box"></div>
+        </div>
+    </div>
+
+    <div id="modal">
+        <div class="modal-inner">
+            <p style="color:#FF5722; font-weight:bold; margin-bottom:5px;">[ 오늘의 추천 ]</p>
+            <h2 id="resultName" style="font-size:2.6rem; color:#222; margin:10px 0 20px 0;">음식명</h2>
+            <div style="display:flex; gap:12px; margin-bottom:20px;">
+                <button onclick="openMap('naver')" style="flex:1; padding:18px; background:#03C75A; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">네이버</button>
+                <button onclick="openMap('kakao')" style="flex:1; padding:18px; background:#FEE500; border:none; border-radius:15px; font-weight:bold; color:#3c1e1e; font-size:1.1rem;">카카오</button>
+            </div>
+            <button onclick="closeModal()" style="width:100%; padding:15px; border:none; background:#f0f0f0; border-radius:15px; font-weight:bold; color:#666;">다시 뽑기</button>
+        </div>
+    </div>
+</div>
+
 <script>
     var currentMode = '';
     var menus = [];
@@ -182,5 +262,12 @@ function callad() {
 </script>
 </body>
 </html>
+
+
+
+
+</body>
+</html>
+
 
 
