@@ -11,7 +11,7 @@
         
         .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
 
-        /* 페이지 레이아웃 - 겹치지 않게 절대 위치 고정 */
+        /* 페이지 레이아웃 */
         .page { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             padding: 20px; display: none; flex-direction: column; 
@@ -88,9 +88,22 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
+    // [1] 앱 시작 시 광고 미리 로드 (추가됨)
+    window.onload = function() {
+        console.log("앱 시작: 광고 미리 충전 시도");
+        setTimeout(function() {
+            try {
+                // Median 앱 환경에서만 실행되도록 체크
+                if (navigator.userAgent.includes('GoNative') || window.webkit) {
+                    window.location.href = "gonative://admob/interstitial/load";
+                }
+            } catch (e) { console.log("초기 로드 실패:", e); }
+        }, 2000); 
+    };
+
+    // [2] 광고 호출 함수
     function callad() {
         console.log("광고 호출 시도...");
-        // 웹 브라우저에서 gonative 명령 실행 시 멈춤 방지
         if (!navigator.userAgent.includes('GoNative') && !window.webkit) {
             console.log("웹환경: 광고 명령을 건너뜁니다.");
             return;
@@ -98,7 +111,6 @@
 
         setTimeout(function() {
             try {
-                // iframe 방식으로 안전하게 전달
                 var adUrl = "gonative://admob/interstitial/show?ts=" + new Date().getTime();
                 var iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
@@ -135,7 +147,7 @@
         isRolling = true;
         clickCount++;
         
-        // 3번 클릭마다 광고 호출 (웹에서는 위 callad 함수 내 로직 덕분에 안 멈춤)
+        // 3번 클릭마다 광고 호출
         if (clickCount % 3 === 0) callad();
 
         var slot = document.getElementById('slot-machine');
