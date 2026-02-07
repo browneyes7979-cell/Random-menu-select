@@ -89,16 +89,34 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
-    function callad() {
-            console.log("광고 호출 시도!");
+function callad() {
+            console.log("광고 호출 시도...");
+            // 광고 호출 때문에 추천 로직이 멈추지 않도록 setTimeout으로 0.5초 뒤에 실행
+            setTimeout(function() {
+                try {
+                    window.location.href = "gonative://admob/interstitial/show?ts=" + new Date().getTime();
+                } catch (e) {
+                    console.error("광고 호출 에러:", e);
+                }
+            }, 500);
+        }
 
-            // 1. Median 최신 브릿지 방식 (권장)
-            if (window.gonative && window.gonative.admob && window.gonative.admob.interstitial) {
-                window.gonative.admob.interstitial.show();
-            } 
-            // 2. 구형 URL Scheme 방식 (백업)
-            else {
-                window.location.href = "gonative://admob/interstitial/show";
+        function selectMenu(type) {
+            // 1. 메뉴 추천 로직을 광고보다 먼저 실행해서 결과를 보여줍니다.
+            const list = menuList[type];
+            const randomIndex = Math.floor(Math.random() * list.length);
+            const selectedMenu = list[randomIndex];
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `오늘의 ${type === 'lunch' ? '점심' : '저녁'} 추천 메뉴는 바로!<br><strong>[ ${selectedMenu} ]</strong> 입니다.`;
+            resultDiv.classList.add('show');
+
+            // 2. 클릭 횟수 계산 및 광고 호출
+            clickCount++;
+            
+            // 3번 클릭마다 광고 호출 (메뉴 추천이 끝난 뒤 실행됨)
+            if (clickCount % 3 === 0) {
+                callad();
             }
         }
 
@@ -164,4 +182,5 @@
 </script>
 </body>
 </html>
+
 
