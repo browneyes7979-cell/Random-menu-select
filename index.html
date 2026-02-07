@@ -8,20 +8,33 @@
         :root { --primary: #FF5722; --lunch: #FFC107; --dinner: #3F51B5; --bg: #F8F9FA; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        
         .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; display: none; flex-direction: column; background: white; z-index: 1; pointer-events: none; }
+
+        /* 페이지 레이아웃 - 겹치지 않게 절대 위치 고정 */
+        .page { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            padding: 20px; display: none; flex-direction: column; 
+            background: white; z-index: 1; pointer-events: none; 
+        }
         .visible { display: flex !important; z-index: 10; pointer-events: auto; }
+
+        /* 홈 화면 UI */
         #home { justify-content: center; align-items: center; text-align: center; }
         .mode-btn { width: 90%; padding: 40px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* 메인 앱 UI */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         #slot-machine { height: 100px; font-size: 2rem; font-weight: bold; color: var(--primary); display: flex; justify-content: center; align-items: center; border: 4px solid #f0f0f0; border-radius: 20px; margin-bottom: 20px; background: #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
         .btn-pick { width: 100%; padding: 25px; border-radius: 20px; border: none; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-pick:active { opacity: 0.8; transform: scale(0.98); }
+
         .admin-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
         .list-box { flex: 1; border: 1px solid #f9f9f9; overflow-y: auto; background: #fdfdfd; border-radius: 15px; padding: 10px; }
         .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; background: white; margin-bottom: 6px; border-radius: 10px; font-size: 1rem; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; pointer-events: auto; }
-        .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* 모달 팝업 */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; }
     </style>
 </head>
 <body>
@@ -75,22 +88,24 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
-    // [광고 핵심 수정] iframe 방식으로 백그라운드에서 신호만 전달
     function callad() {
-        console.log("광고 신호 전달 중...");
+        console.log("광고 호출 시도...");
+        // 웹 브라우저에서 gonative 명령 실행 시 멈춤 방지
+        if (!navigator.userAgent.includes('GoNative') && !window.webkit) {
+            console.log("웹환경: 광고 명령을 건너뜁니다.");
+            return;
+        }
+
         setTimeout(function() {
             try {
+                // iframe 방식으로 안전하게 전달
                 var adUrl = "gonative://admob/interstitial/show?ts=" + new Date().getTime();
                 var iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = adUrl;
                 document.body.appendChild(iframe);
-                setTimeout(function() {
-                    if(iframe.parentNode) document.body.removeChild(iframe);
-                }, 300);
-            } catch (e) {
-                console.log("광고 호출 실패:", e);
-            }
+                setTimeout(() => { if(iframe.parentNode) document.body.removeChild(iframe); }, 300);
+            } catch (e) { console.log(e); }
         }, 300);
     }
 
@@ -118,14 +133,10 @@
     function startRolling() {
         if (isRolling || menus.length === 0) return;
         isRolling = true;
-        
-        // 횟수 카운트
         clickCount++;
         
-        // 3번마다 광고 호출 (함수명 callad로 통일)
-        if (clickCount % 3 === 0) {
-            callad(); 
-        }
+        // 3번 클릭마다 광고 호출 (웹에서는 위 callad 함수 내 로직 덕분에 안 멈춤)
+        if (clickCount % 3 === 0) callad();
 
         var slot = document.getElementById('slot-machine');
         var duration = 1500; 
