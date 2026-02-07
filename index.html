@@ -8,31 +8,17 @@
         :root { --primary: #FF5722; --lunch: #FFC107; --dinner: #3F51B5; --bg: #F8F9FA; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        
         .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
-
-        /* 페이지 레이아웃 */
-        .page { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            padding: 20px; display: none; flex-direction: column; 
-            background: white; z-index: 1; pointer-events: none; 
-        }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; display: none; flex-direction: column; background: white; z-index: 1; pointer-events: none; }
         .visible { display: flex !important; z-index: 10; pointer-events: auto; }
-
-        /* 홈 화면 UI */
         #home { justify-content: center; align-items: center; text-align: center; }
         .mode-btn { width: 90%; padding: 40px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* 메인 앱 UI */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         #slot-machine { height: 100px; font-size: 2rem; font-weight: bold; color: var(--primary); display: flex; justify-content: center; align-items: center; border: 4px solid #f0f0f0; border-radius: 20px; margin-bottom: 20px; background: #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
         .btn-pick { width: 100%; padding: 25px; border-radius: 20px; border: none; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-
         .admin-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
         .list-box { flex: 1; border: 1px solid #f9f9f9; overflow-y: auto; background: #fdfdfd; border-radius: 15px; padding: 10px; }
         .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; background: white; margin-bottom: 6px; border-radius: 10px; font-size: 1rem; }
-
-        /* 모달 팝업 */
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
         .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; }
     </style>
@@ -88,37 +74,20 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
-    // [1] 앱 시작 시 광고 미리 로드 (추가됨)
-    window.onload = function() {
-        console.log("앱 시작: 광고 미리 충전 시도");
-        setTimeout(function() {
-            try {
-                // Median 앱 환경에서만 실행되도록 체크
-                if (navigator.userAgent.includes('GoNative') || window.webkit) {
-                    window.location.href = "gonative://admob/interstitial/load";
-                }
-            } catch (e) { console.log("초기 로드 실패:", e); }
-        }, 2000); 
-    };
-
-    // [2] 광고 호출 함수
+    // [웹투앱 전용 광고 호출 함수]
     function callad() {
         console.log("광고 호출 시도...");
-        if (!navigator.userAgent.includes('GoNative') && !window.webkit) {
-            console.log("웹환경: 광고 명령을 건너뜁니다.");
-            return;
+        try {
+            // 웹투앱은 브라우저 환경에서도 에러가 나지 않도록 처리됨
+            if (typeof Web2App !== "undefined" && Web2App.showInterstitialAd) {
+                Web2App.showInterstitialAd(); // 웹투앱 표준 전면 광고 명령어
+            } else {
+                // 웹 브라우저 테스트용 메시지
+                console.log("Web2App 환경이 아닙니다. (웹 테스트 중)");
+            }
+        } catch (e) {
+            console.error("광고 에러:", e);
         }
-
-        setTimeout(function() {
-            try {
-                var adUrl = "gonative://admob/interstitial/show?ts=" + new Date().getTime();
-                var iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = adUrl;
-                document.body.appendChild(iframe);
-                setTimeout(() => { if(iframe.parentNode) document.body.removeChild(iframe); }, 300);
-            } catch (e) { console.log(e); }
-        }, 300);
     }
 
     function goApp(m) {
