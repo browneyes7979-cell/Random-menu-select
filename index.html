@@ -83,26 +83,17 @@
     var menus = [];
     var clickCount = 0;
     var isRolling = false;
-    
-    // 사용자의 광고 단위 ID 적용
-    var AD_UNIT_ID = "ca-app-pub-9031243076879952/3406227963";
 
     var defaultData = {
         lunch: ["김치찌개", "된장찌개", "부대찌개", "순두부찌개", "청국장", "동태찌개", "육개장", "뼈해장국", "순대국", "돼지국밥", "설렁탕", "갈비탕", "추어탕", "닭곰탕", "김치볶음밥", "제육덮밥", "오징어덮밥", "비빔밥", "돌솥비빔밥", "회덮밥", "돈까스", "생선까스", "치킨까스", "카레라이스", "하이라이스", "짜장면", "짬뽕", "볶음밥", "잡채밥", "마라탕", "쌀국수", "팟타이", "우동", "메밀소바", "라멘", "햄버거", "샌드위치", "샐러드", "김밥/라면", "떡볶이/튀김"],
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
+    // [수정] Median 전용 광고 호출 (딱 이 부분만 바꿨습니다)
     function callAd() {
-        // 앱 인벤터나 웹뷰 빌더에서 광고를 호출하는 표준 신호
         try {
-            if (window.Android && window.Android.showAd) {
-                window.Android.showAd(AD_UNIT_ID); // 안드로이드 인터페이스에 ID 전달
-            } else if (typeof showAd === 'function') {
-                showAd(AD_UNIT_ID);
-            } else {
-                console.log("Ad Call Sent for: " + AD_UNIT_ID);
-            }
-        } catch(e) { console.error("Ad Error:", e); }
+            window.location.href = "gonative://admob/interstitial/show";
+        } catch(e) { console.error("Ad Error"); }
     }
 
     function goApp(m) {
@@ -130,14 +121,11 @@
         if (isRolling || menus.length === 0) return;
         isRolling = true;
         clickCount++;
-        
-        // 3회 클릭 시 광고 호출
         if (clickCount % 3 === 0) callAd();
 
         var slot = document.getElementById('slot-machine');
         var duration = 1500; 
         var start = Date.now();
-
         var timer = setInterval(function() {
             slot.innerText = menus[Math.floor(Math.random() * menus.length)];
             if (Date.now() - start > duration) {
