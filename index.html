@@ -66,7 +66,7 @@
 <script>
     var currentMode = '';
     var menus = [];
-    var clickCount = 0;
+    var clickCount = 0; // 클릭 횟수 추적
     var isRolling = false;
 
     var defaultData = {
@@ -74,19 +74,12 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
-    // [웹투앱 전용 광고 호출 함수]
-    function callad() {
-        console.log("광고 호출 시도...");
-        try {
-            // 웹투앱은 브라우저 환경에서도 에러가 나지 않도록 처리됨
-            if (typeof Web2App !== "undefined" && Web2App.showInterstitialAd) {
-                Web2App.showInterstitialAd(); // 웹투앱 표준 전면 광고 명령어
-            } else {
-                // 웹 브라우저 테스트용 메시지
-                console.log("Web2App 환경이 아닙니다. (웹 테스트 중)");
-            }
-        } catch (e) {
-            console.error("광고 에러:", e);
+    // 전면 광고 호출 함수 (웹투앱 전용)
+    function callAdmob() {
+        if (typeof Web2App !== "undefined" && Web2App.showInterstitialAd) {
+            Web2App.showInterstitialAd();
+        } else {
+            console.log("Web2App 환경이 아닙니다.");
         }
     }
 
@@ -114,20 +107,26 @@
     function startRolling() {
         if (isRolling || menus.length === 0) return;
         isRolling = true;
-        clickCount++;
         
-        // 3번 클릭마다 광고 호출
-        if (clickCount % 3 === 0) callad();
-
         var slot = document.getElementById('slot-machine');
         var duration = 1500; 
         var start = Date.now();
+        
         var timer = setInterval(function() {
             slot.innerText = menus[Math.floor(Math.random() * menus.length)];
             if (Date.now() - start > duration) {
                 clearInterval(timer);
                 isRolling = false;
                 showResult(slot.innerText);
+
+                // [중요 로직] 결과창 띄운 후 클릭 카운트 계산
+                clickCount++;
+                if (clickCount >= 3) {
+                    setTimeout(function() {
+                        callAdmob(); // 3번째 결과가 나온 뒤 0.5초 후 광고 송출
+                        clickCount = 0; // 카운트 초기화
+                    }, 500);
+                }
             }
         }, 80);
     }
