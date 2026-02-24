@@ -1,72 +1,7 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>오늘 뭐 먹지? 프로</title>
-    <style>
-        :root { --primary: #FF5722; --lunch: #FFC107; --dinner: #3F51B5; --bg: #F8F9FA; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
-        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; display: none; flex-direction: column; background: white; z-index: 1; pointer-events: none; }
-        .visible { display: flex !important; z-index: 10; pointer-events: auto; }
-        #home { justify-content: center; align-items: center; text-align: center; }
-        .mode-btn { width: 90%; padding: 40px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        #slot-machine { height: 100px; font-size: 2rem; font-weight: bold; color: var(--primary); display: flex; justify-content: center; align-items: center; border: 4px solid #f0f0f0; border-radius: 20px; margin-bottom: 20px; background: #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
-        .btn-pick { width: 100%; padding: 25px; border-radius: 20px; border: none; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .admin-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
-        .list-box { flex: 1; border: 1px solid #f9f9f9; overflow-y: auto; background: #fdfdfd; border-radius: 15px; padding: 10px; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; background: white; margin-bottom: 6px; border-radius: 10px; font-size: 1rem; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div id="home" class="page visible">
-        <h1 style="margin-bottom: 40px; font-size: 2.2rem;">🍱 오늘 뭐 먹지?</h1>
-        <button type="button" class="mode-btn" style="background:var(--lunch);" onclick="goApp('lunch')">☀️ 점심 추천</button>
-        <button type="button" class="mode-btn" style="background:var(--dinner);" onclick="goApp('dinner')">🌙 저녁 추천</button>
-    </div>
-
-    <div id="app" class="page">
-        <div class="header">
-            <button onclick="location.reload()" style="padding:10px 15px; border-radius:12px; border:1px solid #ddd; background:#fff; font-weight:bold;">◀ 홈</button>
-            <h2 id="title" style="margin:0; font-size: 1.3rem;">메뉴 추천</h2>
-            <div style="width:50px;"></div>
-        </div>
-        <div id="slot-machine">준비 완료!</div>
-        <button id="pickBtn" class="btn-pick" onclick="startRolling()">🎲 메뉴 뽑기!</button>
-        <div class="admin-section">
-            <p style="font-weight:bold; margin:0 0 10px 5px; color:#444;">📋 내 메뉴 리스트 (<span id="menuCount">0</span>)</p>
-            <div style="display:flex; gap:8px; margin-bottom:15px;">
-                <input type="text" id="menuInput" style="flex:1; padding:12px; border:2px solid #eee; border-radius:12px; font-size:16px;" placeholder="메뉴 추가">
-                <button onclick="addMenu()" style="padding:0 20px; background:#4CAF50; color:white; border:none; border-radius:12px; font-weight:bold;">추가</button>
-            </div>
-            <div id="menuListView" class="list-box"></div>
-        </div>
-    </div>
-
-    <div id="modal">
-        <div class="modal-inner">
-            <p style="color:#FF5722; font-weight:bold; margin-bottom:5px;">[ 오늘의 추천 ]</p>
-            <h2 id="resultName" style="font-size:2.6rem; color:#222; margin:10px 0 20px 0;">음식명</h2>
-            <div style="display:flex; gap:12px; margin-bottom:20px;">
-                <button onclick="openMap('naver')" style="flex:1; padding:18px; background:#03C75A; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">네이버</button>
-                <button onclick="openMap('kakao')" style="flex:1; padding:18px; background:#FEE500; border:none; border-radius:15px; font-weight:bold; color:#3c1e1e; font-size:1.1rem;">카카오</button>
-            </div>
-            <button onclick="closeModal()" style="width:100%; padding:15px; border:none; background:#f0f0f0; border-radius:15px; font-weight:bold; color:#666;">다시 뽑기</button>
-        </div>
-    </div>
-</div>
-
 <script>
     var currentMode = '';
     var menus = [];
-    var clickCount = 0; // 클릭 횟수 추적
+    var clickCount = 0; 
     var isRolling = false;
 
     var defaultData = {
@@ -74,12 +9,12 @@
         dinner: ["삼겹살", "목살구이", "돼지갈비", "소갈비", "차돌박이", "한우등심", "스테이크", "양갈비", "양꼬치", "제육볶음", "닭갈비", "찜닭", "치킨", "전기통닭", "순살치킨", "아구찜", "해물찜", "코다리조림", "고등어조림", "갈치조림", "광어회", "연어회", "참치회", "물회", "초밥", "조개구이", "장어구이", "매운탕", "곱창구이", "대창구이", "막창구이", "곱창전골", "불고기", "샤브샤브", "스키야키", "밀푀유나베", "감자탕", "등갈비찜", "족발", "보쌈", "냉면/편육", "육회", "파전/막걸리", "골뱅이소면", "먹태/노가리", "떡볶이/순대", "닭발", "오돌뼈", "돼지껍데기", "피자", "파스타", "리조또", "라자냐", "감바스", "탕수육", "양장피", "팔보채", "깐풍기", "유산슬", "훠궈"]
     };
 
-    // 전면 광고 호출 함수 (웹투앱 전용)
+    // ✅ [수정] 안드로이드 전용 광고 호출 함수
     function callAdmob() {
-        if (typeof Web2App !== "undefined" && Web2App.showInterstitialAd) {
-            Web2App.showInterstitialAd();
+        if (window.Android && window.Android.onMenuClick) {
+            window.Android.onMenuClick(); // 우리가 만든 MainActivity의 함수 호출
         } else {
-            console.log("Web2App 환경이 아닙니다.");
+            console.log("일반 브라우저 환경입니다.");
         }
     }
 
@@ -119,14 +54,8 @@
                 isRolling = false;
                 showResult(slot.innerText);
 
-                // [중요 로직] 결과창 띄운 후 클릭 카운트 계산
-                clickCount++;
-                if (clickCount >= 3) {
-                    setTimeout(function() {
-                        callAdmob(); // 3번째 결과가 나온 뒤 0.5초 후 광고 송출
-                        clickCount = 0; // 카운트 초기화
-                    }, 500);
-                }
+                // ✅ [수정] 메뉴를 뽑았을 때만 광고 카운트 신호를 보냄
+                callAdmob(); 
             }
         }, 80);
     }
@@ -144,12 +73,25 @@
     function delMenu(i) { menus.splice(i, 1); render(); }
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
+    // ✅ [수정] 지도 앱 강제 연동을 위해 window.location.href 사용
     function openMap(type) {
         var name = document.getElementById('resultName').innerText;
         var q = encodeURIComponent(name + " 현지인 맛집");
-        var url = (type === 'naver') ? 'https://m.map.naver.com/search2/search.naver?query=' : 'https://map.kakao.com/link/search/';
-        window.open(url + q, '_blank');
+        
+        if (type === 'naver') {
+            // 네이버 지도 앱 호출 스킴
+            window.location.href = 'nmap://search?query=' + q + '&appname=com.myname.randommenu';
+        } else {
+            // 카카오 지도 앱 호출 스킴
+            window.location.href = 'kakaomap://search?q=' + q;
+        }
+
+        // 만약 앱이 안깔려 있을 경우를 대비한 2초 후 웹 이동 (보험)
+        setTimeout(function() {
+            var webUrl = (type === 'naver') 
+                ? 'https://m.map.naver.com/search2/search.naver?query=' + q 
+                : 'https://map.kakao.com/link/search/' + q;
+            window.location.href = webUrl;
+        }, 2000);
     }
 </script>
-</body>
-</html>
