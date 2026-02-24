@@ -140,12 +140,8 @@
         } else {
             window.location.href = 'kakaomap://search?q=' + q;
         }
-        setTimeout(function() {
-            if (document.hasFocus()) {
-                window.location.href = (type === 'naver') ? 'https://m.map.naver.com/search2/search.naver?query=' + q : 'https://map.kakao.com/link/search/' + q;
-            }
-        }, 1500);
     }
 </script>
 </body>
 </html>
+
