@@ -1,57 +1,189 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>오늘 뭐 먹지?</title>
+    <style>
+        :root { --primary: #FF5722; --lunch: #FFC107; --dinner: #3F51B5; --bg: #F8F9FA; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
+        .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; display: none; flex-direction: column; background: white; }
+        .visible { display: flex !important; }
+        #home { justify-content: center; align-items: center; text-align: center; }
+        .mode-btn { width: 90%; padding: 30px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        #slot-machine { height: 100px; font-size: 2rem; font-weight: bold; color: var(--primary); display: flex; justify-content: center; align-items: center; border: 4px solid #f0f0f0; border-radius: 20px; margin-bottom: 20px; background: #fff; }
+        .btn-pick { width: 100%; padding: 25px; border-radius: 20px; border: none; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; }
+        .admin-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; }
+        .list-box { flex: 1; border: 1px solid #f9f9f9; overflow-y: auto; background: #fdfdfd; border-radius: 15px; padding: 10px; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; margin-bottom: 6px; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-inner { background: white; width: 88%; padding: 30px; border-radius: 30px; text-align: center; }
+    </style>
+</head>
+<body>
 
-    <uses-permission android:name="android.permission.INTERNET" />
+<div class="container">
+    <div id="home" class="page visible">
+        <h1 style="margin-bottom: 40px; font-size: 2.2rem;">🍱 오늘 뭐 먹지?</h1>
+        <button type="button" class="mode-btn" style="background:var(--lunch);" onclick="goApp('lunch')">☀️ 점심 추천</button>
+        <button type="button" class="mode-btn" style="background:var(--dinner);" onclick="goApp('dinner')">🌙 저녁 추천</button>
+    </div>
 
-    <queries>
-        <package android:name="com.nhn.android.nmap" />
-        <package android:name="net.daum.android.map" />
-        <package android:name="com.bgpworks.beskin" />
-        <package android:name="com.coupang.eats" />
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="baemin" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="coupangeats" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="nmap" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="kakaomap" />
-        </intent>
-    </queries>
+    <div id="app" class="page">
+        <div class="header">
+            <button onclick="location.reload()" style="padding:10px 15px; border-radius:12px; border:1px solid #ddd; background:#fff; font-weight:bold;">◀ 홈</button>
+            <h2 id="title" style="margin:0; font-size: 1.3rem;">메뉴 추천</h2>
+            <div style="width:50px;"></div>
+        </div>
+        <div id="slot-machine">준비 완료!</div>
+        <button id="pickBtn" class="btn-pick" onclick="startRolling()">🎲 메뉴 뽑기!</button>
+        <div class="admin-section">
+            <p style="font-weight:bold; margin:0 0 10px 5px; color:#444;">📋 내 메뉴 리스트 (<span id="menuCount">0</span>)</p>
+            <div style="display:flex; gap:8px; margin-bottom:15px;">
+                <input type="text" id="menuInput" style="flex:1; padding:12px; border:2px solid #eee; border-radius:12px; font-size:16px;" placeholder="메뉴 추가">
+                <button onclick="addMenu()" style="padding:0 20px; background:#4CAF50; color:white; border:none; border-radius:12px; font-weight:bold;">추가</button>
+            </div>
+            <div id="menuListView" class="list-box"></div>
+        </div>
+    </div>
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="오늘 뭐 먹지"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:usesCleartextTraffic="true">
+    <div id="modal">
+        <div class="modal-inner">
+            <p style="color:#FF5722; font-weight:bold; margin-bottom:5px;">[ 오늘의 추천 ]</p>
+            <h2 id="resultName" style="font-size:2.6rem; color:#222; margin:10px 0 20px 0;">음식명</h2>
 
-        <!-- 테스트 앱 ID (출시 전 실제 ID로 교체) -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            <!-- 지도 버튼 -->
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                <button onclick="openMap('naver')" style="flex:1; padding:18px; background:#03C75A; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">네이버</button>
+                <button onclick="openMap('kakao')" style="flex:1; padding:18px; background:#FEE500; border:none; border-radius:15px; font-weight:bold; color:#3c1e1e; font-size:1.1rem;">카카오</button>
+            </div>
 
-        <activity
-            android:name="com.myname.randommenu.MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:screenOrientation="sensorPortrait"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            <!-- 배달 버튼 -->
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                <button onclick="openMap('baemin')" style="flex:1; padding:18px; background:#1AC9B7; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">배달의민족</button>
+                <button onclick="openMap('coupang')" style="flex:1; padding:18px; background:#1264D0; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">쿠팡이츠</button>
+            </div>
 
-    </application>
+            <!-- 공유 버튼 -->
+            <button onclick="shareMenu()" style="width:100%; padding:15px; border:none; background:#FF9800; border-radius:15px; font-weight:bold; color:white; margin-bottom:12px;">📤 공유하기</button>
 
-</manifest>
+            <button onclick="closeModal()" style="width:100%; padding:15px; border:none; background:#f0f0f0; border-radius:15px; font-weight:bold; color:#666;">다시 뽑기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var currentMode = '';
+    var menus = [];
+    var isRolling = false;
+
+    var defaultData = {
+        lunch: [
+            "제육볶음", "김치찌개", "된장찌개", "순두부찌개", "부대찌개",
+            "비빔밥", "돌솥비빔밥", "냉면", "물냉면", "비빔냉면",
+            "칼국수", "수제비", "짜장면", "짬뽕", "탕수육",
+            "볶음밥", "김밥", "라면", "우동", "소바",
+            "텐동", "돈까스", "생선까스", "오므라이스", "카레라이스",
+            "하이라이스", "샌드위치", "햄버거", "피자", "떡볶이",
+            "순대국", "뼈해장국", "콩나물국밥", "잔치국수", "육개장",
+            "삼계탕", "설렁탕", "곰탕", "마라탕", "육회비빔밥"
+        ],
+        dinner: [
+            "삼겹살", "목살구이", "소고기구이", "한우구이", "갈비구이",
+            "돼지갈비", "닭갈비", "치킨", "족발", "보쌈",
+            "곱창", "막창", "대창", "양꼬치", "오리불고기",
+            "훈제오리", "장어구이", "낙지볶음", "쭈꾸미볶음", "해물찜",
+            "아구찜", "꽃게찜", "조개구이", "조개찜", "해물탕",
+            "매운탕", "대구탕", "동태탕", "감자탕", "찜닭",
+            "닭볶음탕", "샤브샤브", "파스타", "스테이크", "리조또",
+            "초밥", "회", "참치회", "육회", "물회"
+        ]
+    };
+
+    function callAdmob() {
+        if (window.Android && window.Android.onMenuClick) {
+            window.Android.onMenuClick();
+        }
+    }
+
+    function goApp(m) {
+        currentMode = m;
+        document.getElementById('home').classList.remove('visible');
+        document.getElementById('app').classList.add('visible');
+        document.getElementById('title').innerText = (m === 'lunch' ? "☀️ 점심 추천" : "🌙 저녁 추천");
+        document.getElementById('pickBtn').style.background = (m === 'lunch' ? 'var(--lunch)' : 'var(--dinner)');
+        var saved = localStorage.getItem('food_v2_' + m);
+        menus = saved ? JSON.parse(saved) : [...defaultData[m]];
+        render();
+    }
+
+    function render() {
+        var html = '';
+        for (var i = 0; i < menus.length; i++) {
+            html += '<div class="menu-item"><span>' + menus[i] + '</span><span style="color:#ff4d4d; font-weight:bold; cursor:pointer;" onclick="delMenu(' + i + ')">✕</span></div>';
+        }
+        document.getElementById('menuListView').innerHTML = html;
+        document.getElementById('menuCount').innerText = menus.length;
+        localStorage.setItem('food_v2_' + currentMode, JSON.stringify(menus));
+    }
+
+    function startRolling() {
+        if (isRolling || menus.length === 0) return;
+        isRolling = true;
+        var slot = document.getElementById('slot-machine');
+        var start = Date.now();
+        var timer = setInterval(function() {
+            slot.innerText = menus[Math.floor(Math.random() * menus.length)];
+            if (Date.now() - start > 1500) {
+                clearInterval(timer);
+                isRolling = false;
+                showResult(slot.innerText);
+                callAdmob();
+            }
+        }, 80);
+    }
+
+    function showResult(menu) {
+        document.getElementById('resultName').innerText = menu;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function addMenu() {
+        var val = document.getElementById('menuInput').value.trim();
+        if (val) { menus.unshift(val); document.getElementById('menuInput').value = ''; render(); }
+    }
+
+    function delMenu(i) { menus.splice(i, 1); render(); }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function openMap(type) {
+        var name = document.getElementById('resultName').innerText;
+        var q = encodeURIComponent(name + " 맛집");
+        var url = '';
+        if (type === 'naver') {
+            url = 'nmap://search?query=' + q + '&appname=com.myname.randommenu';
+        } else if (type === 'kakao') {
+            url = 'kakaomap://search?q=' + q;
+        } else if (type === 'baemin') {
+            url = 'intent://search?query=' + encodeURIComponent(name) + '#Intent;scheme=baemin;package=com.woowahan.market;end';
+        } else if (type === 'coupang') {
+            url = 'intent://search?q=' + encodeURIComponent(name) + '#Intent;scheme=coupangeats;package=com.coupang.mobile.eats;end';
+        }
+        window.location.href = url;
+    }
+
+    function shareMenu() {
+        var name = document.getElementById('resultName').innerText;
+        var text = "오늘 '" + name + "' 어때? '오늘 뭐 먹지?' 앱에서 뽑았어!";
+        if (navigator.share) {
+            navigator.share({ text: text });
+        } else if (window.Android && window.Android.shareMenu) {
+            window.Android.shareMenu(text);
+        }
+    }
+</script>
+</body>
+</html>
