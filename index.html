@@ -169,12 +169,12 @@
             url = 'kakaomap://search?q=' + q;
         } else if (type === 'baemin') {
             if (window.Android && window.Android.openApp) {
-                window.Android.openApp('baemin', name);
+                window.Android.openApp('baemin');
             }
             return;
         } else if (type === 'coupang') {
             if (window.Android && window.Android.openApp) {
-                window.Android.openApp('coupang', name);
+                window.Android.openApp('coupang');
             }
             return;
         }
