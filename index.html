@@ -168,9 +168,9 @@
         } else if (type === 'kakao') {
             url = 'kakaomap://search?q=' + q;
         } else if (type === 'baemin') {
-            url = 'intent://search?query=' + encodeURIComponent(name) + '#Intent;scheme=baemin;package=com.woowahan.market;end';
+            url = 'baemin://search?query=' + encodeURIComponent(name);
         } else if (type === 'coupang') {
-            url = 'intent://search?q=' + encodeURIComponent(name) + '#Intent;scheme=coupangeats;package=com.coupang.mobile.eats;end';
+            url = 'coupangeats://search?q=' + encodeURIComponent(name);
         }
         window.location.href = url;
     }
