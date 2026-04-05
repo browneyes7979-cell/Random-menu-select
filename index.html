@@ -115,7 +115,7 @@
         document.getElementById('app').classList.add('visible');
         document.getElementById('title').innerText = (m === 'lunch' ? "☀️ 점심 추천" : "🌙 저녁 추천");
         document.getElementById('pickBtn').style.background = (m === 'lunch' ? 'var(--lunch)' : 'var(--dinner)');
-        var saved = localStorage.getItem('food_v1_' + m);
+        var saved = localStorage.getItem('food_v2_' + m);
         menus = saved ? JSON.parse(saved) : [...defaultData[m]];
         render();
     }
@@ -127,7 +127,7 @@
         }
         document.getElementById('menuListView').innerHTML = html;
         document.getElementById('menuCount').innerText = menus.length;
-        localStorage.setItem('food_v1_' + currentMode, JSON.stringify(menus));
+        localStorage.setItem('food_v2_' + currentMode, JSON.stringify(menus));
     }
 
     function startRolling() {
