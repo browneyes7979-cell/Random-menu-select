@@ -9,11 +9,8 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         .container { width: 100%; max-width: 450px; height: 100%; background: white; position: relative; }
-        
-        /* ✅ 클릭 무시 옵션(pointer-events) 삭제 완료 */
         .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; display: none; flex-direction: column; background: white; }
         .visible { display: flex !important; }
-        
         #home { justify-content: center; align-items: center; text-align: center; }
         .mode-btn { width: 90%; padding: 30px 20px; margin: 15px 0; border: none; border-radius: 25px; color: white; font-size: 1.6rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -57,10 +54,22 @@
         <div class="modal-inner">
             <p style="color:#FF5722; font-weight:bold; margin-bottom:5px;">[ 오늘의 추천 ]</p>
             <h2 id="resultName" style="font-size:2.6rem; color:#222; margin:10px 0 20px 0;">음식명</h2>
-            <div style="display:flex; gap:12px; margin-bottom:20px;">
+
+            <!-- 지도 버튼 -->
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
                 <button onclick="openMap('naver')" style="flex:1; padding:18px; background:#03C75A; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">네이버</button>
                 <button onclick="openMap('kakao')" style="flex:1; padding:18px; background:#FEE500; border:none; border-radius:15px; font-weight:bold; color:#3c1e1e; font-size:1.1rem;">카카오</button>
             </div>
+
+            <!-- 배달 버튼 -->
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                <button onclick="openMap('baemin')" style="flex:1; padding:18px; background:#1AC9B7; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">배달의민족</button>
+                <button onclick="openMap('coupang')" style="flex:1; padding:18px; background:#1264D0; color:white; border:none; border-radius:15px; font-weight:bold; font-size:1.1rem;">쿠팡이츠</button>
+            </div>
+
+            <!-- 공유 버튼 -->
+            <button onclick="shareMenu()" style="width:100%; padding:15px; border:none; background:#FF9800; border-radius:15px; font-weight:bold; color:white; margin-bottom:12px;">📤 공유하기</button>
+
             <button onclick="closeModal()" style="width:100%; padding:15px; border:none; background:#f0f0f0; border-radius:15px; font-weight:bold; color:#666;">다시 뽑기</button>
         </div>
     </div>
@@ -72,13 +81,31 @@
     var isRolling = false;
 
     var defaultData = {
-        lunch: ["김치찌개", "부대찌개", "돈까스", "제육덮밥", "짜장면", "짬뽕", "햄버거", "샌드위치", "순대국", "칼국수"],
-        dinner: ["삼겹살", "치킨", "피자", "족발", "보쌈", "회", "곱창", "아구찜", "닭발", "스테이크"]
+        lunch: [
+            "제육볶음", "김치찌개", "된장찌개", "순두부찌개", "부대찌개",
+            "비빔밥", "돌솥비빔밥", "냉면", "물냉면", "비빔냉면",
+            "칼국수", "수제비", "짜장면", "짬뽕", "탕수육",
+            "볶음밥", "김밥", "라면", "우동", "소바",
+            "텐동", "돈까스", "생선까스", "오므라이스", "카레라이스",
+            "하이라이스", "샌드위치", "햄버거", "피자", "떡볶이",
+            "순대국", "뼈해장국", "콩나물국밥", "잔치국수", "육개장",
+            "삼계탕", "설렁탕", "곰탕", "마라탕", "육회비빔밥"
+        ],
+        dinner: [
+            "삼겹살", "목살구이", "소고기구이", "한우구이", "갈비구이",
+            "돼지갈비", "닭갈비", "치킨", "족발", "보쌈",
+            "곱창", "막창", "대창", "양꼬치", "오리불고기",
+            "훈제오리", "장어구이", "낙지볶음", "쭈꾸미볶음", "해물찜",
+            "아구찜", "꽃게찜", "조개구이", "조개찜", "해물탕",
+            "매운탕", "대구탕", "동태탕", "감자탕", "찜닭",
+            "닭볶음탕", "샤브샤브", "파스타", "스테이크", "리조또",
+            "초밥", "회", "참치회", "육회", "물회"
+        ]
     };
 
     function callAdmob() {
         if (window.Android && window.Android.onMenuClick) {
-            window.Android.onMenuClick(); 
+            window.Android.onMenuClick();
         }
     }
 
@@ -95,8 +122,8 @@
 
     function render() {
         var html = '';
-        for(var i=0; i<menus.length; i++) {
-            html += '<div class="menu-item"><span>'+menus[i]+'</span><span style="color:#ff4d4d; font-weight:bold; cursor:pointer;" onclick="delMenu('+i+')">✕</span></div>';
+        for (var i = 0; i < menus.length; i++) {
+            html += '<div class="menu-item"><span>' + menus[i] + '</span><span style="color:#ff4d4d; font-weight:bold; cursor:pointer;" onclick="delMenu(' + i + ')">✕</span></div>';
         }
         document.getElementById('menuListView').innerHTML = html;
         document.getElementById('menuCount').innerText = menus.length;
@@ -114,7 +141,7 @@
                 clearInterval(timer);
                 isRolling = false;
                 showResult(slot.innerText);
-                callAdmob(); // 광고 카운트
+                callAdmob();
             }
         }, 80);
     }
@@ -126,7 +153,7 @@
 
     function addMenu() {
         var val = document.getElementById('menuInput').value.trim();
-        if(val) { menus.unshift(val); document.getElementById('menuInput').value = ''; render(); }
+        if (val) { menus.unshift(val); document.getElementById('menuInput').value = ''; render(); }
     }
 
     function delMenu(i) { menus.splice(i, 1); render(); }
@@ -135,13 +162,28 @@
     function openMap(type) {
         var name = document.getElementById('resultName').innerText;
         var q = encodeURIComponent(name + " 맛집");
+        var url = '';
         if (type === 'naver') {
-            window.location.href = 'nmap://search?query=' + q + '&appname=com.myname.randommenu';
-        } else {
-            window.location.href = 'kakaomap://search?q=' + q;
+            url = 'nmap://search?query=' + q + '&appname=com.myname.randommenu';
+        } else if (type === 'kakao') {
+            url = 'kakaomap://search?q=' + q;
+        } else if (type === 'baemin') {
+            url = 'baemin://search?query=' + encodeURIComponent(name);
+        } else if (type === 'coupang') {
+            url = 'coupangeats://search?q=' + encodeURIComponent(name);
+        }
+        window.location.href = url;
+    }
+
+    function shareMenu() {
+        var name = document.getElementById('resultName').innerText;
+        var text = "오늘 '" + name + "' 어때? '오늘 뭐 먹지?' 앱에서 뽑았어!";
+        if (navigator.share) {
+            navigator.share({ text: text });
+        } else if (window.Android && window.Android.shareMenu) {
+            window.Android.shareMenu(text);
         }
     }
 </script>
 </body>
 </html>
-
