@@ -168,9 +168,11 @@
         } else if (type === 'kakao') {
             url = 'kakaomap://search?q=' + q;
         } else if (type === 'baemin') {
-            url = 'baemin://';
+            if (window.Android) window.Android.openApp('baemin');
+            return;
         } else if (type === 'coupang') {
-            url = 'coupangeats://';
+            if (window.Android) window.Android.openApp('coupang');
+            return;
         }
         window.location.href = url;
     }
